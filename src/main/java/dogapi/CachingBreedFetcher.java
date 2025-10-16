@@ -16,21 +16,21 @@ public class CachingBreedFetcher implements BreedFetcher {
     // TODO Task 2: Complete this class
     private int callsMade = 0;
     private BreedFetcher fetcher;          // store the real fetcher
-    private Map<String, List<String>> cache = = new HashMap<>();  // store cached results
+    private Map<String, List<String>> cache = new HashMap<>();  // store cached results
 
     public CachingBreedFetcher(BreedFetcher fetcher) {
         this.fetcher = fetcher;    // keep the real fetcher
     }
 
     @Override
-    public List<String> getSubBreeds(String breed) {
+    public List<String> getSubBreeds(String breed) throws BreedNotFoundException {
         // Step 1: check cache first
         if (cache.containsKey(breed)) {
             return cache.get(breed);
         }
         // Step 2: fetch from real fetcher if not in cache
         try {
-            List<String> subBreeds = fetcher.getSubBreeds(breed); // real fetch
+            List<String> subBreeds = fetcher.getSubBreeds(breed) ; // real fetch
             callsMade++;                                        // count the call
             cache.put(breed, subBreeds);                        // save in cache
             return subBreeds;                                   // return result

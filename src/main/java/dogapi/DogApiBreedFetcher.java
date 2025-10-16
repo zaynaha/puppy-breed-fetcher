@@ -39,7 +39,7 @@ public class DogApiBreedFetcher implements BreedFetcher {
     }
 
     @Override
-    public List<String> getSubBreeds(String breed) {
+    public List<String> getSubBreeds(String breed) throws BreedNotFoundException {
         // make an empty list to hold sub-breed names we will collect
         List<String> subBreeds = new ArrayList<>();
         // build the exact web address (URL) that returns sub-breeds for the given breed
@@ -59,7 +59,7 @@ public class DogApiBreedFetcher implements BreedFetcher {
 
         } catch (IOException e) {
             // if there was a problem fetching the data, print an error so we can see what went wrong
-            System.err.println("Error fetching sub-breeds for " + breed + ": " + e.getMessage());
+            throw new BreedNotFoundException(breed);
         }
         // return the list (may be empty if there were no sub-breeds or an error happened)
         return subBreeds;
