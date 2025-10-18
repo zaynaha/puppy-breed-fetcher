@@ -28,40 +28,47 @@ public class DogApiBreedFetcher implements BreedFetcher {
      * Helper method to make an HTTP GET request to a given URL
      * and return the raw JSON response as a String.
      */
-    public String run(String url) throws IOException {
+
+
+    @Override
+    public List<String> getSubBreeds(String breed) throws BreedNotFoundException {
+
+        // build the exact web address (URL) that returns sub-breeds for the given breed
+        String url = "https://dog.ceo/api/breed/" + breed + "/list";
+
         Request request = new Request.Builder()
                 .url(url)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
-        }
-    }
+            if (!response.isSuccessful() || response.body() == null) {
+                throw new BreedNotFoundException(breed);
+            }
 
-    @Override
-    public List<String> getSubBreeds(String breed) throws BreedNotFoundException {
-        // make an empty list to hold sub-breed names we will collect
-        List<String> subBreeds = new ArrayList<>();
-        // build the exact web address (URL) that returns sub-breeds for the given breed
-        String url = "https://dog.ceo/api/breed/" + breed + "/list";
+            String responseBody = response.body().string();
 
-        try {
-            // call the helper method to fetch the text the server sends back
-            String responseBody = run(url);
             // turn that text (which is JSON) into an object we can read from
             JSONObject json = new JSONObject(responseBody);
+            String status = json.getString("status");
+
+            // check if the API returned an error
+            if (status.equals("error")) {
+                throw new BreedNotFoundException(breed);
+            }
+
             // get the array stored under the key "message" (that array lists the sub-breeds)
             JSONArray messageArray = json.getJSONArray("message");
+            // make an empty list to hold sub-breed names we will collect
+            List<String> subBreeds = new ArrayList<>();
             // go through each item in the array and add it to our list
             for (int i = 0; i < messageArray.length(); i++) {
                 subBreeds.add(messageArray.getString(i));
             }
+            return subBreeds;
 
-        } catch (IOException e) {
-            // if there was a problem fetching the data, print an error so we can see what went wrong
+        } catch (IOException | org.json.JSONException e) {
+            // convert any IO or JSON parsing errors into BreedNotFoundException
             throw new BreedNotFoundException(breed);
         }
-        // return the list (may be empty if there were no sub-breeds or an error happened)
-        return subBreeds;
     }
 }
